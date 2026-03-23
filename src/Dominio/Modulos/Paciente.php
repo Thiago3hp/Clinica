@@ -12,5 +12,7 @@ class Paciente{
         private array $telefone,
         private DateTimeImmutable $data_nascimento,
         private string $endereco,
-    ){}              
+    ){}
+    
+    
 }

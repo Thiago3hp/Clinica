@@ -10,7 +10,9 @@ class Medico{
         private string $especialidade,
     ) {}
 
-      public function recuperarId(): ?int 
+
+    /*MUTATOS, modificadores */
+    public function recuperarId(): ?int 
     {
         return $this->id;
     }

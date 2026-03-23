@@ -37,7 +37,7 @@ class RepositorioPaciente implements RepositorioPacienteInterface
                 $paciente['id_paciente'],
                 $paciente['nome_paciente'],
                 $paciente['cpf_paciente'],
-                new Telefone($paciente['telefone']),
+                $paciente::Telefone, (array['telefone']),
                 $paciente[DateTimeImmutable('data_nascimento')],
                 $paciente['endereco'],
             );
