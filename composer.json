@@ -1,0 +1,18 @@
+{
+    "name": "thiag/class_luis",
+    "description": "primeiro composer",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Thiag\\ClassLuis\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Thiago3hp",
+            "email": "thiagopereirasousa93@gmail.com"
+        }
+    ],
+    "require": {}
+}
