@@ -27,7 +27,7 @@ class RepositorioMedico implements RepositorioMedicoInterface
     }
 
     public function inserirMedico(Medico $medico): bool{
-    $inserirQuery = "INSERT INTO medicos (crm, nome, especialidade) VALUES (:crm, : nome, :especialidade;";
+    $inserirQuery = "INSERT INTO medicos (crm, nome, especialidade) VALUES (:crm, :nome, :especialidade);";
     $stmt = $this -> conexao ->prepare($inserirQuery);   
 
     $sucesso = $stmt -> execute([
@@ -60,10 +60,24 @@ class RepositorioMedico implements RepositorioMedicoInterface
 
         return $stmt -> execute();
     }
-    public function recuperarMedico(Medico $medico): bool
-    { return true;}
 
-    public function hidratacao(PDOStatement $stmt): array
+    public function recuperarMedico(int $id): ?Medico
+    {
+        $sqlQuery = "SELECT * FROM medicos WHERE id =:id;";
+        $stmt = $this -> conexao -> prepare($sqlQuery);
+
+        $stmt -> bindValue(':id', $id, PDO :: PARAM_INT);
+        $stmt -> execute();
+
+        $medico = $this->hidratacao($stmt);
+         if (count($medico) === 0) {
+        return null;
+        }
+
+    return $medico[0];
+    }
+  
+    private function hidratacao(PDOStatement $stmt): array
     {
         $listaDadosMedicos = $stmt -> fetchAll(PDO::FETCH_ASSOC);
         $listaMedicos = [];
@@ -71,7 +85,7 @@ class RepositorioMedico implements RepositorioMedicoInterface
         foreach($listaDadosMedicos as $medico) {
             $listaMedicos [] = new Medico(
                 $medico['id'],
-                $medico['crm'],
+                $medico['crm'], 
                 $medico['nome'],
                 $medico['especialidade'],
             );

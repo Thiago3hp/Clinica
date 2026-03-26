@@ -10,7 +10,7 @@ interface RepositorioPacienteInterface
     public function inserirPaciente(Paciente $paciente);
     public function atualizarPaciente(Paciente $paciente);
     public function deletarPaciente(Paciente $paciente);
-    public function recuperarPaciente(Paciente $paciente);
+    public function recuperarPaciente(int $id): ?Paciente;
 }
 
 ?>

@@ -27,18 +27,79 @@ class RepositorioPaciente implements RepositorioPacienteInterface
         return $this -> hidratacao($stmt);
     } 
 
+    public function inserirPaciente(Paciente $paciente) :bool 
+    {
+        $inseriQuery = "INSERT INTO pacientes(nome, cpf, telefone, data_nascimento,endereco) VALUES (:nome, :cpf, :telefone, :data_nascimento, :endereco);";
+        $stmt = $this -> conexao = prepare($inserirQuery);
+
+        $sucesso = $stmt -> execute([
+        ':nome' => $paciente -> recuperarNome(),
+        ':cpf' => $paciente -> recuperarCPF(),
+        ':telefone' => $paciente -> recuperarTelefone(),
+        ':data_nascimento' => $paciente -> recuperarData_nascimento(),
+        ':endereco' => $paciente -> recuperarEndereco(),
+        ]);
+        $paciente ->definirID($this ->conexao -> lastInsertId());
+        return $sucesso;
+    }
+
+    public function atualizarPaciente(Paciente $paciente) : bool
+    {
+       $atualizarQuery = "UPDATE paciente SET nome = :nome, cpf = :cpf, telefone = :telefone, data_nascimento = :data_nascimento, endereco = :endereco WHERE id = :id";
+
+       $stmt = $this -> conexao -> prepare($atualizarQuery);
+       $stmt -> bindValue(':nome', $paciente ->recuperarNome());
+       $stmt -> bindValue('cpf ', $paciente -> recuperarCPF());
+       $stmt -> bindValue('telefone', $paciente ->recuperarTelefone());
+       $stmt -> bindValue('data_nascimento', $paciente -> recuperarData_nascimento());
+       $stmt -> bindValue('endereco', $paciente -> recuperarEndereco());
+
+       return $stmt -> execute();
+    }
+
+    public function deletarPaciente(Paciente $paciente): bool
+    {
+        $stmt = $this-> conexao -> prepare("DELETE FROM paciente WHERE id=?;");
+        
+        $stmt -> bindValue(1, $paciente -> recuperarId(),PDO::PARAM_INT);
+
+        return $stmt ->execute();
+
+    }
+
+    public function recuperarMedico(int $id): ?Paciente
+    {
+        $sqlQuery = "SELECT * FROM paciente WHERE id =:id;";
+        $stmt = $this -> conexao -> prepare($sqlQuery);
+
+        $stmt -> bindValue(':id', $id, PDO :: PARAM_INT);
+        $stmt -> execute();
+
+        $paciente = $this->hidratacao($stmt);
+         if (count($paciente) === 0) {
+        return null;
+        }
+
+    return $paciente[0];
+    }
+  
+
     public function hidratacao(PDOStatement $stmt): array
     {
         $listaDadosPaciente = $stmt -> fetchAll(PDO::FETCH_ASSOC);
         $listaPaciente = [];
 
         foreach($listaDadosPaciente as $paciente) {
+            $telefones = array_map(
+                fn($tel) =>new Telefone($tel['telefone']),
+                $paciente['telefone']
+            );
             $listaPaciente [] = new Paciente(
                 $paciente['id_paciente'],
                 $paciente['nome_paciente'],
                 $paciente['cpf_paciente'],
-                $paciente::Telefone, (array['telefone']),
-                $paciente[DateTimeImmutable('data_nascimento')],
+                $telefones,
+                new DateTimeImmutable($paciente['data_nascimento']),
                 $paciente['endereco'],
             );
         }

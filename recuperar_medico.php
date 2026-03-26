@@ -5,8 +5,10 @@ use Thiag\ClassLuis\Infraestrutura\Reporsitorios\RepositorioMedico;
 
 require_once "vendor/autoload.php";
 
+$id =1;
+
 $pdoMedico = new RepositorioMedico();
-$resposta = $pdoMedico -> listarMedicos();
+$resposta = $pdoMedico -> recuperarMedico($id);
 
 var_dump($resposta);
 ?>

@@ -10,7 +10,7 @@ interface RepositorioMedicoInterface
     public function inserirMedico(Medico $medico);
     public function deletarMedico(Medico $medico);
     public function atualizarMedico(Medico $medico);
-    public function recuperarMedico(Medico $medico);
+    public function recuperarMedico(int $id): ?Medico;
 
 }
 
