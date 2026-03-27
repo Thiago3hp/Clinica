@@ -10,7 +10,7 @@ CREATE TABLE medicos (
         nome TEXT,
         especialidade TEXT
     );
-    CREATE TABLE paciente(
+    CREATE TABLE pacientes(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nome_paciente VARCHAR(160) NOT NULL,
         cpf_paciente VACHAR(11) NOT NULL UNIQUE,

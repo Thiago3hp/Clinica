@@ -13,5 +13,10 @@ class Telefone{
             throw new Exception ("Formato de telefone inválido");
         }
     }    
+
+     public function recuperarTelefone(): string
+    {
+        return $this->numero;
+    }
 }
 ?>

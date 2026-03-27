@@ -5,6 +5,7 @@ namespace Thiag\ClassLuis\Infraestrutura\Reporsitorios;
 use DateTimeImmutable;
 use Thiag\ClassLuis\Dominio\Modulos\Paciente;
 use Thiag\ClassLuis\Infraestrutura\Configuracoes\Telefone;
+use Thiag\ClassLuis\Infraestrutura\Configuracoes\Cpf;
 use Thiag\ClassLuis\Dominio\Repositorio\RepositorioPacienteInterface;
 use Thiag\ClassLuis\Infraestrutura\Persistencia\FabricarConexao;
 use PDO;
@@ -29,13 +30,13 @@ class RepositorioPaciente implements RepositorioPacienteInterface
 
     public function inserirPaciente(Paciente $paciente) :bool 
     {
-        $inseriQuery = "INSERT INTO pacientes(nome, cpf, telefone, data_nascimento,endereco) VALUES (:nome, :cpf, :telefone, :data_nascimento, :endereco);";
-        $stmt = $this -> conexao = prepare($inserirQuery);
+        $inserirQuery = "INSERT INTO pacientes (nome, cpf, telefone, data_nascimento, endereco) VALUES (:nome, :cpf, :telefone, :data_nascimento, :endereco);";
+        $stmt = $this -> conexao -> prepare($inserirQuery);
 
         $sucesso = $stmt -> execute([
         ':nome' => $paciente -> recuperarNome(),
         ':cpf' => $paciente -> recuperarCPF(),
-        ':telefone' => $paciente -> recuperarTelefone(),
+        ':telefone' =>implode (',', $paciente -> recuperarTelefone()),
         ':data_nascimento' => $paciente -> recuperarData_nascimento(),
         ':endereco' => $paciente -> recuperarEndereco(),
         ]);
@@ -45,7 +46,7 @@ class RepositorioPaciente implements RepositorioPacienteInterface
 
     public function atualizarPaciente(Paciente $paciente) : bool
     {
-       $atualizarQuery = "UPDATE paciente SET nome = :nome, cpf = :cpf, telefone = :telefone, data_nascimento = :data_nascimento, endereco = :endereco WHERE id = :id";
+       $atualizarQuery = "UPDATE pacientes SET nome = :nome, cpf = :cpf, telefone = :telefone, data_nascimento = :data_nascimento, endereco = :endereco WHERE id = :id";
 
        $stmt = $this -> conexao -> prepare($atualizarQuery);
        $stmt -> bindValue(':nome', $paciente ->recuperarNome());
@@ -59,7 +60,7 @@ class RepositorioPaciente implements RepositorioPacienteInterface
 
     public function deletarPaciente(Paciente $paciente): bool
     {
-        $stmt = $this-> conexao -> prepare("DELETE FROM paciente WHERE id=?;");
+        $stmt = $this-> conexao -> prepare("DELETE FROM pacientes WHERE id=?;");
         
         $stmt -> bindValue(1, $paciente -> recuperarId(),PDO::PARAM_INT);
 
@@ -67,9 +68,9 @@ class RepositorioPaciente implements RepositorioPacienteInterface
 
     }
 
-    public function recuperarMedico(int $id): ?Paciente
+    public function recuperarPaciente(int $id): ?Paciente
     {
-        $sqlQuery = "SELECT * FROM paciente WHERE id =:id;";
+        $sqlQuery = "SELECT * FROM pacientes WHERE id =:id;";
         $stmt = $this -> conexao -> prepare($sqlQuery);
 
         $stmt -> bindValue(':id', $id, PDO :: PARAM_INT);
@@ -97,7 +98,7 @@ class RepositorioPaciente implements RepositorioPacienteInterface
             $listaPaciente [] = new Paciente(
                 $paciente['id_paciente'],
                 $paciente['nome_paciente'],
-                $paciente['cpf_paciente'],
+                new Cpf($paciente['cpf_paciente']),
                 $telefones,
                 new DateTimeImmutable($paciente['data_nascimento']),
                 $paciente['endereco'],
