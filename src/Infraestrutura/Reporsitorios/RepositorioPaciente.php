@@ -20,7 +20,7 @@ class RepositorioPaciente implements RepositorioPacienteInterface
         $this -> conexao = FabricarConexao::criarConexao();
     }
 
-    public function listarPaciente(): array
+    public function listarPacientes(): array
     {
         $sqlQuery = "SELECT * FROM pacientes;";
         $stmt = $this ->conexao -> query($sqlQuery);
@@ -30,30 +30,31 @@ class RepositorioPaciente implements RepositorioPacienteInterface
 
     public function inserirPaciente(Paciente $paciente) :bool 
     {
-        $inserirQuery = "INSERT INTO pacientes (nome, cpf, telefone, data_nascimento, endereco) VALUES (:nome, :cpf, :telefone, :data_nascimento, :endereco);";
+        $inserirQuery = "INSERT INTO pacientes (nome_paciente, cpf_paciente, telefone, data_nascimento, endereco) VALUES (:nome, :cpf, :telefone, :data_nascimento, :endereco);";
         $stmt = $this -> conexao -> prepare($inserirQuery);
 
         $sucesso = $stmt -> execute([
-        ':nome' => $paciente -> recuperarNome(),
+        ':nome' => $paciente -> recuperarNomePaciente(),
         ':cpf' => $paciente -> recuperarCPF(),
         ':telefone' =>implode (',', $paciente -> recuperarTelefone()),
-        ':data_nascimento' => $paciente -> recuperarData_nascimento(),
+        ':data_nascimento' => $paciente -> recuperarData_nascimento()->format('Y-m-d'),
         ':endereco' => $paciente -> recuperarEndereco(),
         ]);
-        $paciente ->definirID($this ->conexao -> lastInsertId());
+        $paciente ->definirIdPaciente($this ->conexao -> lastInsertId());
         return $sucesso;
     }
 
     public function atualizarPaciente(Paciente $paciente) : bool
     {
-       $atualizarQuery = "UPDATE pacientes SET nome = :nome, cpf = :cpf, telefone = :telefone, data_nascimento = :data_nascimento, endereco = :endereco WHERE id = :id";
+       $atualizarQuery = "UPDATE pacientes SET nome_paciente = :nome, cpf_paciente = :cpf, telefone = :telefone, data_nascimento = :data_nascimento, endereco = :endereco WHERE id = :id";
 
        $stmt = $this -> conexao -> prepare($atualizarQuery);
-       $stmt -> bindValue(':nome', $paciente ->recuperarNome());
-       $stmt -> bindValue('cpf ', $paciente -> recuperarCPF());
-       $stmt -> bindValue('telefone', $paciente ->recuperarTelefone());
-       $stmt -> bindValue('data_nascimento', $paciente -> recuperarData_nascimento());
-       $stmt -> bindValue('endereco', $paciente -> recuperarEndereco());
+       $stmt -> bindValue(':nome', $paciente ->recuperarNomePaciente());
+       $stmt -> bindValue(':cpf', $paciente -> recuperarCPF() -> recuperarCpf());
+       $stmt -> bindValue(':telefone', implode(',', array_map(fn($tel) => $tel -> recuperarTelefone(), $paciente ->recuperarTelefone())));
+       $stmt -> bindValue(':data_nascimento', $paciente -> recuperarData_nascimento()->format('Y-m-d'));
+       $stmt -> bindValue(':endereco', $paciente -> recuperarEndereco());
+       $stmt -> bindValue(':id', $paciente -> recuperarIdPaciente(), PDO::PARAM_INT);
 
        return $stmt -> execute();
     }
@@ -62,7 +63,7 @@ class RepositorioPaciente implements RepositorioPacienteInterface
     {
         $stmt = $this-> conexao -> prepare("DELETE FROM pacientes WHERE id=?;");
         
-        $stmt -> bindValue(1, $paciente -> recuperarId(),PDO::PARAM_INT);
+        $stmt -> bindValue(1, $paciente -> recuperarIdPaciente(),PDO::PARAM_INT);
 
         return $stmt ->execute();
 
@@ -91,12 +92,15 @@ class RepositorioPaciente implements RepositorioPacienteInterface
         $listaPaciente = [];
 
         foreach($listaDadosPaciente as $paciente) {
+
+            $telefonesArray = explode(',', $paciente['telefone']);
+            
             $telefones = array_map(
-                fn($tel) =>new Telefone($tel['telefone']),
-                $paciente['telefone']
+                fn($tel) =>new Telefone(trim($tel)),
+                $telefonesArray
             );
             $listaPaciente [] = new Paciente(
-                $paciente['id_paciente'],
+                $paciente['id'],
                 $paciente['nome_paciente'],
                 new Cpf($paciente['cpf_paciente']),
                 $telefones,

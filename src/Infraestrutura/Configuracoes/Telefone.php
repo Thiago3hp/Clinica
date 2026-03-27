@@ -12,9 +12,15 @@ class Telefone{
         if (strlen($digitos) !== 11) {
             throw new Exception ("Formato de telefone inválido");
         }
+        $this->numero = $digitos;
     }    
 
      public function recuperarTelefone(): string
+    {
+        return $this->numero;
+    }
+
+    public function __toString(): string
     {
         return $this->numero;
     }
